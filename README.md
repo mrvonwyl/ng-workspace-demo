@@ -1,27 +1,89 @@
-# NgWorkspaceDemo
+# Instructions
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.22.
+## In Terminal
 
-## Development server
+`ng new ng-workspace-demo --create-application=false`
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+`code ng-workspace-demo`
 
-## Code scaffolding
+## In VS Code Terminal 1
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+create .prettierrc with content:
 
-## Build
+```
+{
+  "singleQuote": true
+}
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+`ng g application app --routing=true --style=scss`
 
-## Running unit tests
+test with
+`npm start`
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+`ng g library hello`
 
-## Running end-to-end tests
+change name in library package.json
+`"name": "@mrvonwyl/hello"`
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+change paths in root tsconfig.json
 
-## Further help
+```
+"paths": {
+  "@mrvonwyl/hello": ["dist/hello"],
+  "@mrvonwyl/hello/*": ["dist/hello/*"]
+}
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+add build:watch script in root package.json
+`"build:watch": "ng build hello --watch"`
+
+test with
+`npm run build:watch`
+
+## In VS Code Terminal 2
+
+`ng g service hello-world --project=hello`
+
+implement hello function in hello service
+
+```
+hello(): string {
+  return 'Hello World!';
+}
+```
+
+add hello service to public-api.ts
+`export * from './lib/hello-world.service';`
+
+add HelloModule to app.module.ts in app with the following import statement:
+`import { HelloModule } from '@mrvonwyl/hello';`
+
+change app.component.ts in app
+
+```
+import { Component, OnInit } from '@angular/core';
+import { HelloWorldService } from '@mrvonwyl/hello';
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit {
+  title = 'app';
+  constructor(private helloWorldService: HelloWorldService) {}
+  ngOnInit() {
+    this.title = this.helloWorldService.hello();
+  }
+}
+```
+
+remove unecessary stuff in app.component.html
+
+`ng serve demo`
+
+# Caveats
+
+that changes in the library are reflected you need to save twice. this is because the build of the app is triggered simultaneously and therefore uses the build results of the last build (not the current one).
+
+make sure that you always set your import statements to @mrvonwyl/hello (or whatever the name of your library is) instead of directly referencing to the file with the source code. furthermore the autoimport feature in VS Code adds public-api at the end. this part has to be removed.
